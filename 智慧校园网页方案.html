@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智慧校园网页方案</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+SC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ===========================================
+   CSS CUSTOM PROPERTIES — FRESH WHITE THEME
+   =========================================== */
+:root{
+  --bg:#ffffff;--bg2:#f5f7fa;--bg-card:#ffffff;
+  --tx:#1a2332;--tx2:#6b7b8d;--tx3:#a0aec0;
+  --acc:#3b82f6;--acc-dim:rgba(59,130,246,.08);--acc-glow:rgba(59,130,246,.2);
+  --mag:#8b5cf6;--mag-dim:rgba(139,92,246,.08);
+  --blue:#0ea5e9;--orange:#f59e0b;--red:#ef4444;--green:#10b981;--yellow:#f59e0b;
+  --border:#e5e7eb;--shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+  --shadow-lg:0 4px 12px rgba(0,0,0,.06),0 20px 48px rgba(0,0,0,.08);
+  --f-d:'Inter','Noto Sans SC',sans-serif;--f-b:'Noto Sans SC','Inter',sans-serif;--f-m:'JetBrains Mono',monospace;
+  --ts:clamp(2rem,6vw,5rem);--h2s:clamp(1.4rem,3.5vw,2.8rem);--h3s:clamp(1rem,2.2vw,1.5rem);
+  --bs:clamp(.75rem,1.4vw,1.1rem);--ss:clamp(.6rem,1vw,.85rem);
+  --pad:clamp(1.5rem,4vw,4rem);--gap:clamp(.8rem,2vw,2rem);
+  --ease:cubic-bezier(.16,1,.3,1);--dur:.6s;
+  --rad:clamp(8px,1.2vw,16px);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+/* === VIEWPORT BASE (mandatory) === */
+html,body{height:100%;overflow-x:hidden}
+html{scroll-snap-type:y mandatory;scroll-behavior:smooth}
+.slide{width:100vw;height:100vh;height:100dvh;overflow:hidden;scroll-snap-align:start;display:flex;flex-direction:column;position:relative}
+.sc{flex:1;display:flex;flex-direction:column;justify-content:center;max-height:100%;overflow:hidden;padding:var(--pad)}
+body{background:var(--bg);color:var(--tx);font-family:var(--f-b);font-weight:400}
+
+/* subtle dot pattern bg */
+.slide::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;background-image:radial-gradient(circle,rgba(59,130,246,.04) 1px,transparent 1px);background-size:32px 32px}
+
+/* === RESPONSIVE === */
+@media(max-height:700px){:root{--pad:clamp(.75rem,3vw,2rem);--gap:clamp(.4rem,1.5vw,1rem);--ts:clamp(1.25rem,4.5vw,2.5rem);--h2s:clamp(1rem,3vw,1.75rem)}}
+@media(max-height:600px){:root{--pad:clamp(.5rem,2.5vw,1.5rem);--ts:clamp(1.1rem,4vw,2rem);--bs:clamp(.7rem,1.2vw,.95rem)}.nav-dots,.decorative{display:none}}
+@media(max-height:500px){:root{--pad:clamp(.4rem,2vw,1rem);--ts:clamp(1rem,3.5vw,1.5rem);--h2s:clamp(.9rem,2.5vw,1.25rem);--bs:clamp(.65rem,1vw,.85rem)}}
+@media(max-width:600px){:root{--ts:clamp(1.25rem,7vw,2.5rem)}.grid,.two-col,.feature-grid{grid-template-columns:1fr!important}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.2s!important}html{scroll-behavior:auto}}
+
+/* === ANIMATIONS === */
+.rv{opacity:0;transform:translateY(30px);transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease)}
+.rv-l{opacity:0;transform:translateX(-40px);transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease)}
+.rv-r{opacity:0;transform:translateX(40px);transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease)}
+.rv-s{opacity:0;transform:scale(.9);transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease)}
+.slide.visible .rv,.slide.visible .rv-l,.slide.visible .rv-r,.slide.visible .rv-s{opacity:1;transform:none}
+.rv:nth-child(1){transition-delay:.1s}.rv:nth-child(2){transition-delay:.2s}.rv:nth-child(3){transition-delay:.3s}.rv:nth-child(4){transition-delay:.4s}.rv:nth-child(5){transition-delay:.5s}.rv:nth-child(6){transition-delay:.6s}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(18px)}}
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:.6}}
+@keyframes flowDot{0%{top:0;opacity:0}10%{opacity:1}90%{opacity:1}100%{top:100%;opacity:0}}
+
+/* === COMPONENTS === */
+.orb{position:absolute;border-radius:50%;filter:blur(100px);pointer-events:none;z-index:0}
+.badge{display:inline-block;padding:clamp(.2rem,.5vw,.35rem) clamp(.6rem,1.2vw,1rem);border:1px solid var(--acc);border-radius:999px;font-family:var(--f-d);font-size:var(--ss);color:var(--acc);letter-spacing:.06em;font-weight:600}
+.badge-f{background:var(--acc);color:#fff;border-color:var(--acc)}
+.sn{font-family:var(--f-d);font-size:clamp(3rem,8vw,7rem);font-weight:900;color:rgba(59,130,246,.05);position:absolute;top:clamp(.5rem,2vh,2rem);right:clamp(1rem,4vw,4rem);z-index:0;line-height:1}
+.sl{font-family:var(--f-m);font-size:var(--ss);color:var(--acc);letter-spacing:.1em;text-transform:uppercase;margin-bottom:clamp(.2rem,.8vh,.6rem);font-weight:600}
+h2{font-family:var(--f-b);font-size:var(--h2s);font-weight:900;line-height:1.15;margin-bottom:clamp(.4rem,1.2vh,1rem);color:var(--tx)}
+h3{font-family:var(--f-b);font-size:var(--h3s);font-weight:700;line-height:1.2;color:var(--tx)}
+.ta{color:var(--acc)}.tm{color:var(--mag)}.tb{color:var(--blue)}.to{color:var(--orange)}
+.divider{width:clamp(40px,10vw,120px);height:3px;background:linear-gradient(90deg,var(--acc),rgba(59,130,246,.1));border-radius:2px;margin:clamp(.4rem,1vh,.8rem) 0}
+
+/* cards */
+.cc{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--rad);padding:clamp(.7rem,1.8vw,1.3rem);position:relative;overflow:hidden;transition:transform .3s var(--ease),box-shadow .3s ease;box-shadow:var(--shadow)}
+.cc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--acc),rgba(59,130,246,.2))}
+.cc.mag::before{background:linear-gradient(90deg,var(--mag),rgba(139,92,246,.2))}
+.cc.blu::before{background:linear-gradient(90deg,var(--blue),rgba(14,165,233,.2))}
+.cc.org::before{background:linear-gradient(90deg,var(--orange),rgba(245,158,11,.2))}
+.cc:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+.cc.tilt{transform-style:preserve-3d;perspective:800px}
+
+/* grids */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:clamp(1.5rem,4vw,3rem);align-items:start}
+.feature-grid{display:grid;gap:clamp(.5rem,1.2vw,1rem)}
+.fg4{grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr))}
+.fg3{grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
+.fg2{grid-template-columns:1fr 1fr}
+@media(max-width:768px){.two-col,.fg2{grid-template-columns:1fr}}
+
+/* module highlight row */
+.mh{display:flex;gap:clamp(.5rem,1.2vw,.8rem);align-items:flex-start;margin-bottom:clamp(.5rem,1.2vh,.8rem)}
+.fi{width:clamp(30px,3.5vw,44px);height:clamp(30px,3.5vw,44px);display:flex;align-items:center;justify-content:center;border-radius:10px;font-size:clamp(.9rem,1.8vw,1.3rem);flex-shrink:0}
+.fi.c{background:var(--acc-dim)}.fi.m{background:var(--mag-dim)}.fi.b{background:rgba(14,165,233,.08)}.fi.o{background:rgba(245,158,11,.08)}
+.mh .ft h3{margin-bottom:clamp(.1rem,.3vh,.25rem)}.mh .ft p{font-size:var(--bs);color:var(--tx2);line-height:1.5}
+
+/* legend */
+.legend{display:flex;gap:clamp(.6rem,1.5vw,1.2rem);flex-wrap:wrap;margin-top:clamp(.3rem,.8vh,.6rem)}
+.li{display:flex;align-items:center;gap:clamp(.2rem,.4vw,.4rem);font-size:var(--ss);color:var(--tx2)}
+.ld{width:clamp(8px,1vw,12px);height:clamp(8px,1vw,12px);border-radius:3px;flex-shrink:0}
+
+/* stat with counter */
+.stat-row{display:flex;gap:clamp(1rem,3vw,3rem);margin:clamp(.5rem,1.5vh,1rem) 0;flex-wrap:wrap}
+.si .val{font-family:var(--f-d);font-size:clamp(1.5rem,4vw,3rem);font-weight:900;color:var(--acc);line-height:1}
+.si .lbl{font-size:var(--ss);color:var(--tx2);margin-top:.15rem}
+
+/* tech pills */
+.pills{display:flex;flex-wrap:wrap;gap:clamp(.2rem,.6vw,.4rem);margin-top:clamp(.3rem,.6vh,.5rem)}
+.pill{font-family:var(--f-m);font-size:clamp(.5rem,.8vw,.7rem);padding:clamp(.15rem,.3vw,.25rem) clamp(.4rem,.8vw,.6rem);border:1px solid rgba(59,130,246,.2);border-radius:999px;color:var(--acc);background:var(--acc-dim);font-weight:500}
+
+/* progress bar */
+.progress-bar{position:fixed;top:0;left:0;height:3px;z-index:9999;background:linear-gradient(90deg,var(--acc),var(--mag));width:0;transition:width .3s ease}
+
+/* nav dots */
+.nav-dots{position:fixed;right:clamp(.8rem,2vw,1.5rem);top:50%;transform:translateY(-50%);z-index:9998;display:flex;flex-direction:column;gap:clamp(5px,.8vh,8px)}
+.nd{width:8px;height:8px;border-radius:50%;background:var(--border);cursor:pointer;transition:all .3s ease;border:none;padding:0}
+.nd.active{background:var(--acc);box-shadow:0 0 0 3px var(--acc-dim);transform:scale(1.2)}
+.nd:hover{background:var(--acc);opacity:.6}
+
+/* page indicator */
+.page-ind{position:fixed;bottom:clamp(.8rem,2vh,1.5rem);left:50%;transform:translateX(-50%);z-index:9998;font-family:var(--f-d);font-size:var(--ss);color:var(--tx3);letter-spacing:.1em;font-weight:500}
+.page-ind .cur{color:var(--acc);font-weight:700}
+
+/* lang toggle */
+.lang-btn{position:fixed;top:clamp(.8rem,2vh,1.5rem);right:clamp(.8rem,2vw,1.5rem);z-index:9999;font-family:var(--f-m);font-size:var(--ss);padding:clamp(.2rem,.5vw,.35rem) clamp(.6rem,1.2vw,.9rem);border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--acc);cursor:pointer;transition:all .2s;font-weight:600;box-shadow:var(--shadow)}
+.lang-btn:hover{border-color:var(--acc);background:var(--acc-dim)}
+
+/* confidential */
+.conf{position:fixed;bottom:clamp(.8rem,2vh,1.5rem);right:clamp(.8rem,2vw,1.5rem);z-index:9998;font-family:var(--f-m);font-size:clamp(.5rem,.7vw,.6rem);color:var(--tx3);letter-spacing:.12em;text-transform:uppercase}
+
+/* === TITLE SLIDE === */
+.title-slide .sc{align-items:center;text-align:center}
+.title-slide h1{font-family:var(--f-d);font-size:var(--ts);font-weight:900;background:linear-gradient(135deg,var(--acc),#6366f1,var(--mag));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1}
+.tl{width:clamp(60px,12vw,160px);height:3px;background:linear-gradient(90deg,transparent,var(--acc),transparent);border-radius:2px;margin:clamp(.4rem,1vh,.8rem) 0}
+.subtitle{font-size:clamp(.85rem,1.6vw,1.2rem);color:var(--tx2);font-weight:400;letter-spacing:.04em;max-width:min(80vw,700px)}
+.tag-row{display:flex;gap:clamp(.4rem,1vw,.8rem);margin-top:clamp(.8rem,2vh,1.5rem);flex-wrap:wrap;justify-content:center}
+.tag-pill{font-family:var(--f-d);font-size:clamp(.55rem,.9vw,.7rem);padding:clamp(.25rem,.5vw,.35rem) clamp(.6rem,1.2vw,1rem);border-radius:999px;letter-spacing:.03em;font-weight:600}
+.tag-pill.t1{background:var(--acc-dim);color:var(--acc);border:1px solid rgba(59,130,246,.15)}
+.tag-pill.t2{background:var(--mag-dim);color:var(--mag);border:1px solid rgba(139,92,246,.15)}
+.tag-pill.t3{background:rgba(14,165,233,.08);color:var(--blue);border:1px solid rgba(14,165,233,.15)}
+
+/* === ARCHITECTURE DIAGRAM === */
+.arch{display:flex;flex-direction:column;gap:0;align-items:center;position:relative;max-width:min(90vw,800px);margin:0 auto}
+.arch-layer{width:100%;padding:clamp(.6rem,1.5vw,1.2rem) clamp(1rem,2.5vw,2rem);border-radius:var(--rad);text-align:center;position:relative;z-index:1}
+.arch-layer h3{font-size:clamp(.85rem,1.5vw,1.1rem);margin-bottom:.3rem}
+.arch-layer p{font-size:var(--ss);color:var(--tx2)}
+.arch-l1{background:rgba(59,130,246,.05);border:1px solid rgba(59,130,246,.15)}
+.arch-l2{background:rgba(139,92,246,.04);border:1px solid rgba(139,92,246,.12)}
+.arch-l3{background:rgba(14,165,233,.04);border:1px solid rgba(14,165,233,.12)}
+.arch-conn{width:2px;height:clamp(20px,3vh,35px);position:relative;background:rgba(59,130,246,.1);overflow:visible}
+.arch-conn::after{content:'';position:absolute;left:-3px;width:8px;height:8px;border-radius:50%;background:var(--acc);animation:flowDot 2s ease-in-out infinite}
+.arch-conn.c2::after{background:var(--mag);animation-delay:1s}
+
+/* === COST CALCULATOR === */
+.calc-wrap{display:grid;grid-template-columns:220px 1fr 1fr;gap:clamp(.8rem,2vw,1.5rem);align-items:start;font-size:var(--ss)}
+@media(max-width:900px){.calc-wrap{grid-template-columns:1fr;gap:1rem}}
+.calc-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rad);padding:clamp(.8rem,1.5vw,1.2rem)}
+.calc-panel h4{font-size:clamp(.75rem,1.2vw,.95rem);margin-bottom:clamp(.5rem,1vh,.8rem);color:var(--acc)}
+.calc-slider-group{margin-bottom:clamp(.5rem,1vh,.8rem)}
+.calc-slider-group label{display:block;color:var(--tx2);margin-bottom:.2rem;font-size:clamp(.55rem,.9vw,.7rem);font-weight:500}
+.calc-slider-group .val-display{font-family:var(--f-d);font-size:clamp(1rem,2vw,1.5rem);color:var(--acc);font-weight:800}
+.calc-slider-group .unit{font-size:clamp(.55rem,.8vw,.65rem);color:var(--tx2);margin-left:.2rem}
+.calc-slider-group input[type="range"]{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:#e5e7eb;outline:none;margin-top:.3rem}
+.calc-slider-group input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--acc);cursor:pointer;box-shadow:0 2px 6px rgba(59,130,246,.3)}
+.calc-slider-group select{width:100%;padding:.35rem .5rem;background:#fff;color:var(--tx);border:1px solid var(--border);border-radius:6px;font-family:var(--f-b);font-size:clamp(.6rem,.9vw,.75rem);margin-top:.2rem}
+.cost-col{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--rad);overflow:hidden;box-shadow:var(--shadow)}
+.cost-col-header{padding:clamp(.4rem,.8vw,.6rem) clamp(.8rem,1.5vw,1.2rem);font-weight:700;font-size:clamp(.7rem,1.1vw,.9rem)}
+.cost-col.trad .cost-col-header{background:rgba(239,68,68,.06);color:var(--red);border-bottom:2px solid rgba(239,68,68,.15)}
+.cost-col.newp .cost-col-header{background:rgba(16,185,129,.06);color:var(--green);border-bottom:2px solid rgba(16,185,129,.15)}
+.cost-row{display:flex;justify-content:space-between;align-items:center;padding:clamp(.3rem,.6vw,.45rem) clamp(.8rem,1.5vw,1.2rem);border-bottom:1px solid rgba(0,0,0,.04)}
+.cost-row:hover{background:rgba(59,130,246,.02)}
+.cost-row .item{color:var(--tx2)}.cost-row .price{font-family:var(--f-d);font-weight:700;white-space:nowrap;color:var(--tx)}
+.cost-row.promo .price{color:var(--green);font-style:italic}
+.cost-total{display:flex;justify-content:space-between;align-items:center;padding:clamp(.5rem,.8vw,.7rem) clamp(.8rem,1.5vw,1.2rem);font-weight:700;font-size:clamp(.8rem,1.2vw,1rem)}
+.cost-col.trad .cost-total{background:rgba(239,68,68,.05);color:var(--red)}
+.cost-col.newp .cost-total{background:rgba(16,185,129,.05);color:var(--green)}
+.save-block{grid-column:1/-1;margin-top:clamp(.5rem,1vh,.8rem);display:flex;align-items:center;gap:clamp(1rem,3vw,2rem);flex-wrap:wrap}
+.save-pct{font-family:var(--f-d);font-size:clamp(2rem,5vw,3.5rem);font-weight:900;color:var(--green);line-height:1}
+.save-label{font-size:var(--ss);color:var(--tx2)}
+.save-amount{font-family:var(--f-d);font-size:clamp(1rem,2.5vw,1.8rem);color:var(--green);font-weight:800}
+.compare-bars{flex:1;min-width:200px;display:flex;flex-direction:column;gap:.5rem}
+.cbar{height:clamp(18px,2.5vh,26px);border-radius:6px;position:relative;overflow:hidden;display:flex;align-items:center;font-size:clamp(.5rem,.8vw,.65rem);font-family:var(--f-d);font-weight:600;color:#fff;padding-left:.6rem;white-space:nowrap}
+.cbar.trad-bar{background:linear-gradient(90deg,#ef4444,#fca5a5)}
+.cbar.new-bar{background:linear-gradient(90deg,#10b981,#6ee7b7)}
+.cbar-label{position:absolute;right:.5rem;font-size:clamp(.5rem,.7vw,.6rem);color:rgba(255,255,255,.8)}
+
+/* === TIMELINE === */
+.timeline{display:flex;gap:clamp(.5rem,1.2vw,1rem);align-items:flex-start;flex-wrap:wrap}
+.tl-item{flex:1;min-width:150px;position:relative}
+.tl-item .tl-bar{height:6px;border-radius:3px;margin-bottom:clamp(.3rem,.8vh,.6rem);overflow:hidden;background:#e5e7eb}
+.tl-item .tl-fill{height:100%;border-radius:3px;width:0;transition:width 1.5s var(--ease)}
+.slide.visible .tl-item:nth-child(1) .tl-fill{width:100%;background:var(--acc)}
+.slide.visible .tl-item:nth-child(2) .tl-fill{width:100%;background:var(--mag);transition-delay:.3s}
+.slide.visible .tl-item:nth-child(3) .tl-fill{width:100%;background:var(--blue);transition-delay:.6s}
+.slide.visible .tl-item:nth-child(4) .tl-fill{width:100%;background:var(--orange);transition-delay:.9s}
+.tl-item .tl-num{font-family:var(--f-d);font-size:clamp(.7rem,1.2vw,.95rem);font-weight:800;color:var(--acc);margin-bottom:.2rem}
+.tl-item:nth-child(2) .tl-num{color:var(--mag)}.tl-item:nth-child(3) .tl-num{color:var(--blue)}.tl-item:nth-child(4) .tl-num{color:var(--orange)}
+.tl-item h3{font-size:clamp(.75rem,1.2vw,.95rem);margin-bottom:.2rem}
+.tl-item p{font-size:var(--ss);color:var(--tx2);line-height:1.4}
+.tl-tag{display:inline-block;font-size:clamp(.45rem,.7vw,.55rem);padding:.15rem .5rem;border-radius:4px;background:var(--acc-dim);color:var(--acc);margin-top:.3rem;font-family:var(--f-m);font-weight:600}
+
+/* pain cards flip */
+.pain-card{position:relative;height:clamp(100px,18vh,160px);perspective:600px;cursor:pointer}
+.pain-inner{position:absolute;inset:0;transition:transform .6s var(--ease);transform-style:preserve-3d}
+.pain-card:hover .pain-inner{transform:rotateY(180deg)}
+.pain-front,.pain-back{position:absolute;inset:0;backface-visibility:hidden;border-radius:var(--rad);padding:clamp(.6rem,1.2vw,1rem);display:flex;flex-direction:column;justify-content:center}
+.pain-front{background:#fff;border:1px solid rgba(239,68,68,.15);box-shadow:var(--shadow)}
+.pain-front .pi{font-size:clamp(1.2rem,2.5vw,1.8rem);margin-bottom:.3rem}
+.pain-front h3{font-size:clamp(.75rem,1.2vw,.95rem);color:var(--red);margin-bottom:.2rem}
+.pain-front p{font-size:var(--ss);color:var(--tx2);line-height:1.3}
+.pain-back{background:rgba(16,185,129,.04);border:1px solid rgba(16,185,129,.2);transform:rotateY(180deg);box-shadow:var(--shadow)}
+.pain-back h3{font-size:clamp(.7rem,1.1vw,.85rem);color:var(--green);margin-bottom:.2rem}
+.pain-back p{font-size:var(--ss);color:var(--tx2);line-height:1.3}
+
+/* demo frame */
+.demo-wrap{position:relative;width:100%;flex:1;max-height:min(75vh,650px);border:1px solid var(--border);border-radius:var(--rad);overflow:hidden;background:var(--bg2);box-shadow:var(--shadow-lg)}
+.demo-wrap iframe{width:100%;height:100%;border:none;display:block;min-height:min(65vh,550px)}
+.demo-fallback{display:none;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:min(50vh,400px);color:var(--tx2);text-align:center;gap:.8rem}
+.demo-fallback .dfi{font-size:clamp(2rem,5vw,4rem)}.demo-fallback code{font-family:var(--f-m);font-size:var(--ss);background:var(--acc-dim);color:var(--acc);padding:.2rem .6rem;border-radius:4px}
+
+/* layer demo UI mockup */
+.layer-mock{display:flex;gap:clamp(.3rem,.8vw,.5rem);flex-wrap:wrap}
+.lm-btn{display:flex;align-items:center;gap:.3rem;padding:clamp(.25rem,.5vw,.4rem) clamp(.5rem,1vw,.8rem);font-size:clamp(.55rem,.9vw,.7rem);color:var(--tx2);border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;transition:all .25s;user-select:none;font-weight:500}
+.lm-btn.on{color:var(--acc);border-color:var(--acc);background:var(--acc-dim);font-weight:600}
+.lm-btn .lm-dot{width:6px;height:6px;border-radius:50%;background:var(--tx3);transition:all .25s}
+.lm-btn.on .lm-dot{background:var(--acc);box-shadow:0 0 0 2px var(--acc-dim)}
+
+/* inline editing */
+.edit-hotzone{position:fixed;top:0;left:0;width:80px;height:80px;z-index:10000;cursor:pointer}
+.edit-toggle{position:fixed;top:14px;left:14px;z-index:10001;width:34px;height:34px;border-radius:50%;background:#fff;border:1px solid var(--border);color:var(--tx2);font-size:14px;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .3s ease;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow)}
+.edit-toggle.show,.edit-toggle.active{opacity:1;pointer-events:auto}
+.edit-toggle.active{background:var(--acc);color:#fff;border-color:var(--acc)}
+[contenteditable="true"]{outline:2px dashed rgba(59,130,246,.35);outline-offset:2px;cursor:text;border-radius:2px}
+
+/* hide EN text by default */
+[data-en]{position:relative}
+.lang-en [data-cn]{display:none}
+.lang-en [data-en]::after{content:attr(data-en)}
+</style>
+</head>
+<body>
+
+<!-- Fixed UI -->
+<div class="progress-bar" id="progressBar"></div>
+<nav class="nav-dots" id="navDots"></nav>
+<div class="page-ind" id="pageInd"><span class="cur">01</span> / <span id="totalPages">16</span></div>
+<button class="lang-btn" id="langBtn" title="Switch language">EN</button>
+<span class="conf">2026 · CONFIDENTIAL</span>
+<div class="edit-hotzone" id="editHotzone"></div>
+<button class="edit-toggle" id="editToggle" title="编辑模式 (E)">✏️</button>
+
+<!-- ======================== SLIDE 01: COVER ======================== -->
+<section class="slide title-slide" data-title="封面">
+  <div class="orb" style="width:600px;height:600px;background:#93c5fd;top:-200px;left:-200px;opacity:.25;animation:float 12s ease-in-out infinite"></div>
+  <div class="orb" style="width:400px;height:400px;background:#c4b5fd;bottom:-120px;right:-120px;opacity:.2;animation:float 10s ease-in-out infinite reverse"></div>
+  <div class="orb" style="width:300px;height:300px;background:#99f6e4;top:60%;left:50%;opacity:.15;animation:float 14s ease-in-out infinite 2s"></div>
+  <div class="sc">
+    <span class="badge rv">WDP Digital Twin Platform</span>
+    <div class="tl rv"></div>
+    <h1 class="rv">智慧校园网页方案</h1>
+    <div class="tl rv"></div>
+    <p class="subtitle rv">基于 WDP 数字孪生平台 · 四大业务场景 · 3D 实时可视化大屏</p>
+    <div class="tag-row rv">
+      <span class="tag-pill t1">WDP 空间渲染层</span>
+      <span class="tag-pill t2">数据服务层</span>
+      <span class="tag-pill t3">前端展示层</span>
+    </div>
+    <p class="rv" style="margin-top:clamp(.8rem,2vh,1.5rem);font-size:var(--ss);color:var(--tx3)">复旦大学 · 邯郸校区 · 2026</p>
+  </div>
+</section>
+
+<!-- ======================== SLIDE 02: BACKGROUND ======================== -->
+<section class="slide" data-title="项目背景">
+  <span class="sn">02</span>
+  <div class="sc">
+    <span class="sl rv">Background</span>
+    <h2 class="rv">项目背景 · <span class="to">传统校园管理痛点</span></h2>
+    <div class="divider rv"></div>
+    <p class="rv" style="font-size:var(--bs);color:var(--tx2);max-width:min(85vw,800px);line-height:1.7;margin-bottom:clamp(.6rem,1.5vh,1rem)">
+      传统校园管理面临<strong style="color:var(--tx)">信息孤岛、被动响应、数据分散、无法空间化呈现</strong>四大核心痛点。各系统独立运行，缺乏统一可视化平台，管理决策依赖人工经验，无法实现全域实时感知与智能联动。
+    </p>
+    <div class="feature-grid fg4 rv">
+      <div class="pain-card">
+        <div class="pain-inner">
+          <div class="pain-front"><div class="pi">🏗️</div><h3>信息孤岛</h3><p>安防、运维、能耗等系统各自独立<br>数据无法互通</p></div>
+          <div class="pain-back"><h3>✅ 统一平台</h3><p>WDP 数字孪生统一空间底座<br>四大模块数据融合一屏呈现</p></div>
+        </div>
+      </div>
+      <div class="pain-card">
+        <div class="pain-inner">
+          <div class="pain-front"><div class="pi">🐌</div><h3>被动响应</h3><p>告警延迟、人工巡检<br>事后处理效率低下</p></div>
+          <div class="pain-back"><h3>✅ 主动感知</h3><p>AI 检测 + 实时热力<br>告警秒级推送自动联动处置</p></div>
+        </div>
+      </div>
+      <div class="pain-card">
+        <div class="pain-inner">
+          <div class="pain-front"><div class="pi">📊</div><h3>数据分散</h3><p>人员、设备、空间数据<br>分布在不同系统中</p></div>
+          <div class="pain-back"><h3>✅ 数据汇聚</h3><p>16+ 业务图表集中展示<br>RESTful 接口统一对接</p></div>
+        </div>
+      </div>
+      <div class="pain-card">
+        <div class="pain-inner">
+          <div class="pain-front"><div class="pi">🗺️</div><h3>无法空间化</h3><p>表格报表缺乏空间维度<br>无法直观定位问题</p></div>
+          <div class="pain-back"><h3>✅ 3D 空间化</h3><p>云渲染 3D 校园场景<br>POI/热力/路径/区域全覆盖</p></div>
+        </div>
+      </div>
+    </div>
+    <p class="rv" style="font-size:var(--ss);color:var(--tx3);margin-top:clamp(.4rem,1vh,.6rem);text-align:center">← 悬浮卡片查看解决方案 →</p>
+  </div>
+</section>
+
+<!-- ======================== SLIDE 03: OVERVIEW ======================== -->
+<section class="slide" data-title="方案总览">
+  <span class="sn">03</span>
+  <div class="orb" style="width:350px;height:350px;background:#a5b4fc;top:20%;right:-100px;opacity:.12;animation:float 9s ease-in-out infinite"></div>
+  <div class="sc">
+    <span class="sl rv">Solution Overview</span>
+    <h2 class="rv">方案总览</h2>
+    <div class="divider rv"></div>
+    <p class="rv" style="font-size:var(--bs);color:var(--tx2);max-width:min(85vw,800px);line-height:1.7;margin-bottom:clamp(.6rem,1.5vh,1rem)">
+      基于 WDP 云渲染数字孪生技术，构建覆盖<strong class="ta">校园概览、智能检测、设备运维、安防管理</strong>四大业务的一体化可视化大屏，实现全域感知、全景呈现、智能联动。
+    </p>
+    <div class="stat-row rv">
+      <div class="si"><div class="val" data-count="4">0</div><div class="lbl">业务模块</div></div>
+      <div class="si"><div class="val" data-count="5">0</div><div class="lbl">场景图层</div></div>
+      <div class="si"><div class="val" data-count="16">0</div><div class="lbl">数据图表</div></div>
+      <div class="si"><div class="val" data-count="38">0</div><div class="lbl">建筑覆盖</div></div>
+      <div class="si"><div class="val" data-count="20">0</div><div class="lbl">数据接口</div></div>
+    </div>
+    <div class="feature-grid fg4 rv" style="margin-top:clamp(.4rem,1vh,.6rem)">
+      <div class="cc" style="text-align:center;padding:clamp(.8rem,2vw,1.5rem) clamp(.6rem,1.2vw,1rem)"><div style="font-size:clamp(1.3rem,2.5vw,2rem);margin-bottom:.3rem">🏫</div><h3 style="font-size:clamp(.8rem,1.3vw,1rem)">校园概览</h3><p style="font-size:var(--ss);color:var(--tx2);margin-top:.2rem">POI 建筑标注<br>资源与人员全景</p></div>
+      <div class="cc mag" style="text-align:center;padding:clamp(.8rem,2vw,1.5rem) clamp(.6rem,1.2vw,1rem)"><div style="font-size:clamp(1.3rem,2.5vw,2rem);margin-bottom:.3rem">🔍</div><h3 style="font-size:clamp(.8rem,1.3vw,1rem)">智能检测</h3><p style="font-size:var(--ss);color:var(--tx2);margin-top:.2rem">人流热力 · AI 感知<br>异常告警与处置</p></div>
+      <div class="cc blu" style="text-align:center;padding:clamp(.8rem,2vw,1.5rem) clamp(.6rem,1.2vw,1rem)"><div style="font-size:clamp(1.3rem,2.5vw,2rem);margin-bottom:.3rem">⚙️</div><h3 style="font-size:clamp(.8rem,1.3vw,1rem)">设备运维</h3><p style="font-size:var(--ss);color:var(--tx2);margin-top:.2rem">巡检路线 · 维修调度<br>工单与能耗分析</p></div>
+      <div class="cc org" style="text-align:center;padding:clamp(.8rem,2vw,1.5rem) clamp(.6rem,1.2vw,1rem)"><div style="font-size:clamp(1.3rem,2.5vw,2rem);margin-bottom:.3rem">🛡️</div><h3 style="font-size:clamp(.8rem,1.3vw,1rem)">安防管理</h3><p style="font-size:var(--ss);color:var(--tx2);margin-top:.2rem">风险分区 · 门禁通行<br>应急联动与告警</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== SLIDE 04: ARCHITECTURE ======================== -->
+<section class="slide" data-title="技术架构">
+  <span class="sn">04</span>
+  <div class="sc">
+    <span class="sl rv">Technical Architecture</span>
+    <h2 class="rv">系统架构</h2>
+    <div class="divider rv"></div>
+    <div class="two-col rv" style="margin-top:clamp(.4rem,1vh,.6rem)">
+      <div class="arch">
+        <div class="arch-layer arch-l1"><h3 class="ta">🖥️ 前端展示层</h3><p>HTML5 大屏 · ECharts 图表 · 模块 Tab · 图层控制面板</p>
+          <div class="pills"><span class="pill">Vite 5</span><span class="pill">ECharts 5.5</span><span class="pill">CSS Variables</span></div></div>
+        <div class="arch-conn"></div>
+        <div class="arch-layer arch-l2"><h3 class="tm">🌐 WDP 云渲染层</h3><p>3D 引擎 · WebRTC 视频流 · 覆盖物 API（POI/热力/路径/区域）</p>
+          <div class="pills"><span class="pill" style="border-color:rgba(139,92,246,.2);color:var(--mag);background:var(--mag-dim)">WDP API 2.3</span><span class="pill" style="border-color:rgba(139,92,246,.2);color:var(--mag);background:var(--mag-dim)">WebRTC</span><span class="pill" style="border-color:rgba(139,92,246,.2);color:var(--mag);background:var(--mag-dim)">Cloud Render</span></div></div>
+        <div class="arch-conn c2"></div>
+        <div class="arch-layer arch-l3"><h3 class="tb">📡 数据服务层</h3><p>RESTful API · WebSocket 推送 · 数据库 · 告警引擎</p>
+          <div class="pills"><span class="pill" style="border-color:rgba(14,165,233,.2);color:var(--blue);background:rgba(14,165,233,.08)">REST API</span><span class="pill" style="border-color:rgba(14,165,233,.2);color:var(--blue);background:rgba(14,165,233,.08)">WebSocket</span><span class="pill" style="border-color:rgba(14,165,233,.2);color:var(--blue);background:rgba(14,165,233,.08)">PostgreSQL</span></div></div>
+      </div>
+      <div>
+        <div class="cc rv" style="margin-bottom:clamp(.4rem,1vh,.6rem)"><h3 style="color:var(--acc);font-size:clamp(.8rem,1.2vw,.95rem);margin-bottom:.3rem">数据流向</h3><p style="font-size:var(--ss);color:var(--tx2);line-height:1.6">① 前端发起 API 请求获取业务数据<br>② WDP 引擎接收指令渲染 3D 场景<br>③ WebRTC 实时推送视频流至浏览器<br>④ WebSocket 推送告警事件触发联动<br>⑤ 覆盖物 API 叠加 POI/热力/路径/区域</p></div>
+        <div class="cc mag rv"><h3 style="color:var(--mag);font-size:clamp(.8rem,1.2vw,.95rem);margin-bottom:.3rem">核心优势</h3><p style="font-size:var(--ss);color:var(--tx2);line-height:1.6">▸ 云端渲染，终端零门槛（浏览器即用）<br>▸ 零插件，WebRTC 原生传输<br>▸ 覆盖物与场景解耦，独立图层控制<br>▸ 支持多端：大屏 / PC / 平板 / 手机</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== SLIDE 05: CAMPUS OVERVIEW ======================== -->
+<section class="slide" data-title="校园概览">
+  <span class="sn">05</span>
+  <div class="orb" style="width:350px;height:350px;background:#93c5fd;top:-80px;right:-80px;opacity:.12;animation:float 8s ease-in-out infinite"></div>
+  <div class="sc">
+    <span class="sl rv">Module 01 — Campus Overview</span>
+    <h2 class="rv">校园概览 · <span class="ta">建筑设施标注</span></h2>
+    <div class="divider rv"></div>
+    <div class="two-col" style="margin-top:clamp(.3rem,.8vh,.5rem)">
+      <div>
+        <div class="mh rv"><div class="fi c">📌</div><div class="ft"><h3>POI 点位系统</h3><p>教学楼、宿舍、食堂、图书馆、体育馆等重点建筑全覆盖。每个 POI 配备呼吸光圈、竖向锚点线、智能标签牌，远景聚合、近景拆分。</p></div></div>
+        <div class="mh rv"><div class="fi c">🎥</div><div class="ft"><h3>建筑高亮 FlyTo</h3><p>点击 POI 后建筑描边高亮，镜头自动飞行聚焦，顶部泛光效果。右侧面板联动展示建筑详情：面积、层数、容纳人数。</p></div></div>
+        <div class="mh rv"><div class="fi c">📊</div><div class="ft"><h3>数据面板（6 个图表）</h3><p>核心指标卡片 · 建筑资源柱状图 · 人员空间玫瑰图 · 通知公告列表 · 教学运行折线图 · 空间使用率排行</p></div></div>
+      </div>
+      <div class="cc tilt rv" style="font-size:var(--ss)">
+        <h3 style="color:var(--acc);margin-bottom:.4rem">校园核心数据</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+          <div><span style="color:var(--acc);font-family:var(--f-d);font-size:clamp(1rem,2.5vw,1.8rem);font-weight:800" data-count="37800">0</span><br><span style="color:var(--tx2)">学生总数</span></div>
+          <div><span style="color:var(--acc);font-family:var(--f-d);font-size:clamp(1rem,2.5vw,1.8rem);font-weight:800" data-count="2300">0</span><br><span style="color:var(--tx2)">教师总数</span></div>
+          <div><span style="color:var(--acc);font-family:var(--f-d);font-size:clamp(1rem,2.5vw,1.8rem);font-weight:800" data-count="38">0</span><br><span style="color:var(--tx2)">建筑总数</span></div>
+          <div><span style="color:var(--acc);font-family:var(--f-d);font-size:clamp(1rem,2.5vw,1.8rem);font-weight:800">922<span style="font-size:.6em">亩</span></span><br><span style="color:var(--tx2)">占地面积</span></div>
+        </div>
+        <div style="margin-top:.6rem;padding-top:.5rem;border-top:1px solid var(--border)">
+          <h3 style="color:var(--acc);margin-bottom:.3rem;font-size:clamp(.7rem,1.1vw,.85rem)">POI 建筑列表</h3>
+          <p style="color:var(--tx2);line-height:1.6">教学楼(8) · 宿舍楼(12) · 食堂(3) · 图书馆(2) · 体育馆(2) · 实验楼(5) · 行政楼(3) · 校门(2) · 停车场(1)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== SLIDE 06: SMART DETECTION ======================== -->
+<section class="slide" data-title="智能检测">
+  <span class="sn">06</span>
+  <div class="orb" style="width:300px;height:300px;background:#c4b5fd;bottom:-80px;left:-60px;opacity:.12;animation:float 9s ease-in-out infinite"></div>
+  <div class="sc">
+    <span class="sl rv">Module 02 — Smart Detection</span>
+    <h2 class="rv">智能检测 · <span class="tm">人流密度热力</span></h2>
+    <div class="divider rv"></div>
+    <div class="two-col" style="margin-top:clamp(.3rem,.8vh,.5rem)">
+      <div>
+        <div class="mh rv"><div class="fi m">🌡️</div><div class="ft"><h3>区域热力图</h3><p>基于视频 AI 与 IoT 感知，实时展示人流密度。分区热度渲染，高风险区域脉冲光效，支持时间轴回放与区域钻取到摄像头列表。</p></div></div>
+        <div class="legend rv">
+          <div class="li"><span class="ld" style="background:#10b981"></span>正常</div>
+          <div class="li"><span class="ld" style="background:#f59e0b"></span>轻度异常</div>
+          <div class="li"><span class="ld" style="background:#f97316"></span>中度异常</div>
+          <div class="li"><span class="ld" style="background:#ef4444"></span>高风险</div>
+        </div>
+        <div class="mh rv" style="margin-top:clamp(.4rem,1vh,.6rem)"><div class="fi m">📋</div><div class="ft"><h3>数据面板（8 个图表）</h3><p>检测总览卡片 · 异常类型饼图 · 高风险区排行 · 时段趋势折线 · 实时告警表格 · 摄像头覆盖仪表盘 · 处置漏斗图 · 重点画面卡</p></div></div>
+      </div>
+      <div class="cc mag tilt rv" style="font-size:var(--ss)">
+        <h3 style="color:var(--mag);margin-bottom:.4rem">AI 检测能力矩阵</h3>
+        <div style="display:flex;flex-direction:column;gap:.35rem">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span>人流密度与聚集检测</span><span class="badge-f badge" style="font-size:.55rem;padding:.1rem .4rem">已实现</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center"><span>烟雾 / 火点异常报警</span><span class="badge-f badge" style="font-size:.55rem;padding:.1rem .4rem">已实现</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center"><span>夜间异常逗留识别</span><span class="badge-f badge" style="font-size:.55rem;padding:.1rem .4rem">已实现</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center"><span>车辆违停自动抓拍</span><span class="badge-f badge" style="font-size:.55rem;padding:.1rem .4rem">已实现</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center"><span>黑名单人员实时预警</span><span class="badge" style="font-size:.55rem;padding:.1rem .4rem;color:var(--orange);border-color:var(--orange)">规划中</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center"><span>实验室温湿度异常监测</span><span class="badge" style="font-size:.55rem;padding:.1rem .4rem;color:var(--orange);border-color:var(--orange)">规划中</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== SLIDE 07: DEVICE OPS ======================== -->
+<section class="slide" data-title="设备运维">
+  <span class="sn">07</span>
+  <div class="orb" style="width:280px;height:280px;background:#7dd3fc;top:15%;left:-80px;opacity:.12;animation:float 7s ease-in-out infinite"></div>
+  <div class="sc">
+    <span class="sl rv">Module 03 — Device Operations</span>
+    <h2 class="rv">设备运维 · <span class="tb">巡检与调度</span></h2>
+    <div class="divider rv"></div>
+    <div class="two-col" style="margin-top:clamp(.3rem,.8vh,.5rem)">
+      <div>
+        <div class="mh rv"><div class="fi b">🚶</div><div class="ft"><h3>巡检路线可视化</h3><p>水电/消防/弱电/保洁巡检路线发光展示。已完成(青)、未完成(灰)、异常(红)颜色区分。人员图标沿路线移动，尾迹保留 3-5 秒。点击查看巡检进度与异常点。</p></div></div>
+        <div class="legend rv">
+          <div class="li"><span class="ld" style="background:var(--green)"></span>已完成</div>
+          <div class="li"><span class="ld" style="background:#9ca3af"></span>未完成</div>
+          <div class="li"><span class="ld" style="background:var(--red)"></span>异常</div>
+        </div>
+        <div class="mh rv" style="margin-top:clamp(.4rem,1vh,.5rem)"><div class="fi b">✈️</div><div class="ft"><h3>维修调度路线</h3><p>维修人员→故障点、仓库→楼栋、应急力量调度的抛物线流向动画。起终点不同图标，箭头流动，多路线同时播放。</p></div></div>
+        <div class="legend rv">
+          <div class="li"><span class="ld" style="background:#3b82f6"></span>人员调度</div>
+          <div class="li"><span class="ld" style="background:#10b981"></span>物资配送</div>
+          <div class="li"><span class="ld" style="background:#ef4444"></span>紧急抢修</div>
+        </div>
+      </div>
+      <div class="cc blu tilt rv" style="font-size:var(--ss)">
+        <h3 style="color:var(--blue);margin-bottom:.4rem">运维核心数据</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+          <div><span style="color:var(--blue);font-family:var(--f-d);font-size:clamp(1rem,2.5vw,1.8rem);font-weight:800" data-count="2460">0</span><br><span style="color:var(--tx2)">设备总数</span></div>
+          <div><span style="color:var(--green);font-family:var(--f-d);font-size:clamp(1rem,2.5vw,1.8rem);font-weight:800">94.2%</span><br><span style="color:var(--tx2)">在线率</span></div>
+          <div><span style="color:var(--orange);font-family:var(--f-d);font-size:clamp(1rem,2.5vw,1.8rem);font-weight:800" data-count="44">0</span><br><span style="color:var(--tx2)">故障设备</span></div>
+          <div><span style="color:var(--acc);font-family:var(--f-d);font-size:clamp(1rem,2.5vw,1.8rem);font-weight:800" data-count="12">0</span><br><span style="color:var(--tx2)">今日巡检</span></div>
+        </div>
+        <div style="margin-top:.5rem;padding-top:.4rem;border-top:1px solid var(--border)">
+          <h3 style="color:var(--blue);margin-bottom:.3rem;font-size:clamp(.7rem,1.1vw,.85rem)">数据面板（8 个图表）</h3>
+          <p style="color:var(--tx2);line-height:1.5">设备运行总览 · 分类运行堆叠柱状图 · 工单趋势折线 · 故障排行表 · 巡检任务进度条 · 资产生命周期环形图 · 能耗面积图 · 维修调度表</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== SLIDE 08: SECURITY ======================== -->
+<section class="slide" data-title="安防管理">
+  <span class="sn">08</span>
+  <div class="orb" style="width:300px;height:300px;background:#fed7aa;bottom:-60px;right:-60px;opacity:.15;animation:float 8s ease-in-out infinite reverse"></div>
+  <div class="sc">
+    <span class="sl rv">Module 04 — Security Management</span>
+    <h2 class="rv">安防管理 · <span class="to">风险分区轮廓</span></h2>
+    <div class="divider rv"></div>
+    <div class="two-col" style="margin-top:clamp(.3rem,.8vh,.5rem)">
+      <div>
+        <div class="mh rv"><div class="fi o">🛡️</div><div class="ft"><h3>区域轮廓渲染</h3><p>校门、教学区、宿舍区、实验区、周界等 10 个安防分区独立轮廓渲染。颜色按风险等级实时变化，高风险区域闪烁 + 流动描边。周界防护区可增加竖向电子围栏光带。</p></div></div>
+        <div class="legend rv">
+          <div class="li"><span class="ld" style="background:var(--green)"></span>正常</div>
+          <div class="li"><span class="ld" style="background:var(--yellow)"></span>预警</div>
+          <div class="li"><span class="ld" style="background:var(--red)"></span>告警</div>
+        </div>
+        <div class="mh rv" style="margin-top:clamp(.4rem,1vh,.5rem)"><div class="fi o">🖱️</div><div class="ft"><h3>区域点击联动</h3><p>点击宿舍区展示宿舍安防详情，点击校门区展示门禁通行数据。右侧面板自动切换对应区域的图表和告警列表。</p></div></div>
+      </div>
+      <div>
+        <div class="cc org tilt rv" style="font-size:var(--ss);margin-bottom:clamp(.4rem,.8vh,.5rem)">
+          <h3 style="color:var(--orange);margin-bottom:.3rem">安防分区清单</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.25rem .8rem;color:var(--tx2)">
+            <span>▸ 校门出入口区</span><span>▸ 教学区</span>
+            <span>▸ 宿舍区</span><span>▸ 实验区</span>
+            <span>▸ 体育区</span><span>▸ 行政办公区</span>
+            <span>▸ 停车区</span><span>▸ 周界防护区</span>
+            <span>▸ 重点危险源区</span><span>▸ 消防重点区</span>
+          </div>
+        </div>
+        <div class="cc org rv" style="font-size:var(--ss)">
+          <h3 style="color:var(--orange);margin-bottom:.3rem;font-size:clamp(.7rem,1.1vw,.85rem)">数据面板（8 个图表）</h3>
+          <p style="color:var(--tx2);line-height:1.5">安防态势总览 · 事件类型饼图 · 区域风险分级 · 安防雷达图 · 门禁通行折线 · 告警处置漏斗 · 重点告警表 · 应急资源卡片</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== SLIDE 09: SCENE ENHANCEMENT ======================== -->
+<section class="slide" data-title="场景增强">
+  <span class="sn">09</span>
+  <div class="sc">
+    <span class="sl rv">Scene Enhancement</span>
+    <h2 class="rv">场景增强设计</h2>
+    <div class="divider rv"></div>
+    <div class="feature-grid fg4 rv" style="margin-top:clamp(.4rem,1vh,.6rem)">
+      <div class="cc tilt"><div style="font-size:clamp(1.2rem,2.5vw,1.8rem);margin-bottom:.3rem">💬</div><h3 style="font-size:clamp(.8rem,1.3vw,1rem);margin-bottom:.3rem">建筑点击弹窗</h3><p style="font-size:var(--ss);color:var(--tx2);line-height:1.5">四个模块各有不同弹窗内容：<br>概览→基础信息<br>检测→告警数/摄像头数<br>运维→设备数/故障/工单<br>安防→门禁/监控/告警</p></div>
+      <div class="cc mag tilt"><div style="font-size:clamp(1.2rem,2.5vw,1.8rem);margin-bottom:.3rem">⏱️</div><h3 style="font-size:clamp(.8rem,1.3vw,1rem);margin-bottom:.3rem">时间轴回放</h3><p style="font-size:var(--ss);color:var(--tx2);line-height:1.5">支持 1h/24h/7d 回放<br>热力/路线/区域风险<br>随时间动态变化<br>拖动时间滑块控制</p></div>
+      <div class="cc blu tilt"><div style="font-size:clamp(1.2rem,2.5vw,1.8rem);margin-bottom:.3rem">🚨</div><h3 style="font-size:clamp(.8rem,1.3vw,1rem);margin-bottom:.3rem">告警联动动画</h3><p style="font-size:var(--ss);color:var(--tx2);line-height:1.5">高等级事件自动触发：<br>场景 FlyTo 到告警位置<br>区域闪烁 + 脉冲描边<br>底部跑马灯滚动提醒</p></div>
+      <div class="cc org tilt"><div style="font-size:clamp(1.2rem,2.5vw,1.8rem);margin-bottom:.3rem">🎛️</div><h3 style="font-size:clamp(.8rem,1.3vw,1rem);margin-bottom:.3rem">图层总控面板</h3><p style="font-size:var(--ss);color:var(--tx2);line-height:1.5">8 类图层独立开关：<br>POI · 热力 · 巡检 · 调度<br>区域 · 摄像头 · 门禁 · 告警<br>防止性能压力过大</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== SLIDE 10: LAYER INTERACTION ======================== -->
+<section class="slide" data-title="图层交互">
+  <span class="sn">10</span>
+  <div class="sc">
+    <span class="sl rv">Layer Interaction</span>
+    <h2 class="rv">图层控制与交互联动</h2>
+    <div class="divider rv"></div>
+    <div class="two-col rv" style="margin-top:clamp(.4rem,1vh,.6rem)">
+      <div>
+        <p style="font-size:var(--bs);color:var(--tx2);line-height:1.7;margin-bottom:clamp(.5rem,1.2vh,.8rem)">图层面板与模块 Tab 完全解耦，任意组合叠加。每个图层配备业务颜色图例，开启时镜头自动飞行到最佳视角。</p>
+        <div style="margin-bottom:clamp(.4rem,1vh,.6rem)">
+          <h3 style="font-size:clamp(.8rem,1.2vw,.95rem);margin-bottom:.3rem;color:var(--acc)">图层面板 UI 预览</h3>
+          <div class="layer-mock" id="layerMock">
+            <div class="lm-btn on" data-lm="1"><span class="lm-dot"></span>建筑设施标注</div>
+            <div class="lm-btn" data-lm="2"><span class="lm-dot"></span>人流密度热力</div>
+            <div class="lm-btn on" data-lm="3"><span class="lm-dot"></span>设备巡检路线</div>
+            <div class="lm-btn" data-lm="4"><span class="lm-dot"></span>维修调度路线</div>
+            <div class="lm-btn" data-lm="5"><span class="lm-dot"></span>安防风险分区</div>
+          </div>
+          <p style="font-size:var(--ss);color:var(--tx3);margin-top:.3rem">↑ 点击按钮体验开关效果</p>
+        </div>
+        <div class="feature-grid rv" style="grid-template-columns:1fr 1fr;gap:.4rem">
+          <div class="cc" style="padding:.5rem .7rem"><h3 style="font-size:clamp(.65rem,1vw,.8rem);color:var(--acc)">🎥 镜头自动聚焦</h3><p style="font-size:var(--ss);color:var(--tx2)">图层开启时 FlyTo 到对应最佳视角</p></div>
+          <div class="cc mag" style="padding:.5rem .7rem"><h3 style="font-size:clamp(.65rem,1vw,.8rem);color:var(--mag)">🖱️ 实体点击联动</h3><p style="font-size:var(--ss);color:var(--tx2)">点击场景实体右侧面板自动切换</p></div>
+          <div class="cc blu" style="padding:.5rem .7rem"><h3 style="font-size:clamp(.65rem,1vw,.8rem);color:var(--blue)">🚨 告警自动飞行</h3><p style="font-size:var(--ss);color:var(--tx2)">高等级告警场景自动飞行闪烁</p></div>
+          <div class="cc org" style="padding:.5rem .7rem"><h3 style="font-size:clamp(.65rem,1vw,.8rem);color:var(--orange)">🎨 颜色图例标注</h3><p style="font-size:var(--ss);color:var(--tx2)">每个图层配备业务色带图例</p></div>
+        </div>
+      </div>
+      <div class="cc rv" style="padding:clamp(.8rem,1.5vw,1.2rem)">
+        <h3 style="color:var(--acc);margin-bottom:.4rem;font-size:clamp(.8rem,1.2vw,.95rem)">公共交互规则</h3>
+        <div style="font-size:var(--ss);color:var(--tx2);line-height:1.7;display:flex;flex-direction:column;gap:.3rem">
+          <p>▸ <strong style="color:var(--tx)">模块切换</strong>：点击顶部 Tab 后左右面板内容整体切换，场景图层同步更新</p>
+          <p>▸ <strong style="color:var(--tx)">图表反选联动</strong>：面板中点击"教学楼"，场景仅高亮教学楼</p>
+          <p>▸ <strong style="color:var(--tx)">告警颜色分级</strong>：蓝(提示) · 黄(一般) · 橙(重要) · 红(紧急)</p>
+          <p>▸ <strong style="color:var(--tx)">时间范围切换</strong>：所有统计图表支持 今日/本周/本月/自定义</p>
+          <p>▸ <strong style="color:var(--tx)">特效总开关</strong>：防止大屏性能压力过大</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== SLIDE 11: API DESIGN ======================== -->
+<section class="slide" data-title="接口设计">
+  <span class="sn">11</span>
+  <div class="sc">
+    <span class="sl rv">API Design</span>
+    <h2 class="rv">数据接口清单 · <span class="ta">20+ RESTful 接口</span></h2>
+    <div class="divider rv"></div>
+    <p class="rv" style="font-size:var(--bs);color:var(--tx2);margin-bottom:clamp(.4rem,1vh,.6rem)">全部接口支持时间范围参数、分页、WebSocket 实时推送告警事件。下方为各模块核心接口。</p>
+    <div class="feature-grid fg4 rv" style="font-size:var(--ss)">
+      <div class="cc"><h3 style="color:var(--acc);margin-bottom:.3rem;font-size:clamp(.75rem,1.1vw,.9rem)">🏫 校园概览</h3><div style="color:var(--tx2);font-family:var(--f-m);display:flex;flex-direction:column;gap:.15rem"><span>getCampusBaseInfo</span><span>getCampusBuildingStats</span><span>getCampusPopulationStats</span><span>getCampusPoiList</span><span>getBuildingDetail</span></div></div>
+      <div class="cc mag"><h3 style="color:var(--mag);margin-bottom:.3rem;font-size:clamp(.75rem,1.1vw,.9rem)">🔍 智能检测</h3><div style="color:var(--tx2);font-family:var(--f-m);display:flex;flex-direction:column;gap:.15rem"><span>getDetectOverview</span><span>getHeatmapData</span><span>getAlarmList</span><span>getDetectTrend</span><span>getCameraStats</span></div></div>
+      <div class="cc blu"><h3 style="color:var(--blue);margin-bottom:.3rem;font-size:clamp(.75rem,1.1vw,.9rem)">⚙️ 设备运维</h3><div style="color:var(--tx2);font-family:var(--f-m);display:flex;flex-direction:column;gap:.15rem"><span>getDeviceOverview</span><span>getPatrolRoutes</span><span>getDispatchFlows</span><span>getWorkOrderTrend</span><span>getEnergyTrend</span></div></div>
+      <div class="cc org"><h3 style="color:var(--orange);margin-bottom:.3rem;font-size:clamp(.75rem,1.1vw,.9rem)">🛡️ 安防管理</h3><div style="color:var(--tx2);font-family:var(--f-m);display:flex;flex-direction:column;gap:.15rem"><span>getSecurityOverview</span><span>getZoneRiskData</span><span>getAccessTrend</span><span>getSecurityAlarms</span><span>getEmergencyResources</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== SLIDE 12: LIVE DEMO ======================== -->
+<section class="slide" data-title="在线演示">
+  <span class="sn decorative">DEMO</span>
+  <div class="sc" style="padding-top:clamp(.4rem,1vh,.6rem);padding-bottom:clamp(.4rem,1vh,.6rem)">
+    <div style="display:flex;align-items:center;gap:clamp(.4rem,1.2vw,.8rem);margin-bottom:clamp(.2rem,.6vh,.4rem)">
+      <span class="badge-f badge rv">▸ LIVE DEMO</span>
+      <h2 class="rv" style="margin-bottom:0">智慧校园可视化大屏</h2>
+    </div>
+    <div class="demo-wrap rv-s" id="demoWrapper">
+      <iframe id="demoFrame" src="http://localhost:5173" loading="lazy" allow="autoplay;fullscreen" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+      <div class="demo-fallback" id="demoFallback">
+        <div class="dfi">🖥️</div>
+        <p style="font-size:var(--bs)">Demo 需要启动本地开发服务器</p>
+        <code>cd demo && npm run dev</code>
+        <p style="font-size:var(--ss);color:var(--tx3);margin-top:.3rem">启动后刷新此页面即可查看实时 3D 大屏</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== SLIDE 13: COST CALCULATOR ======================== -->
+<section class="slide" data-title="费用测算">
+  <span class="sn">13</span>
+  <div class="sc" style="padding-top:clamp(.8rem,2vh,1.2rem);padding-bottom:clamp(.5rem,1.5vh,.8rem)">
+    <div style="display:flex;align-items:baseline;gap:.6rem;margin-bottom:clamp(.2rem,.5vh,.3rem)">
+      <span class="sl rv" style="margin-bottom:0">Interactive Cost Calculator</span>
+    </div>
+    <h2 class="rv" style="margin-bottom:clamp(.3rem,.8vh,.5rem)">参数化成本 <span class="ta">实时测算</span></h2>
+    <div class="calc-wrap rv" id="calcWrap">
+      <!-- Left: params -->
+      <div class="calc-panel">
+        <h4>📐 项目参数</h4>
+        <div class="calc-slider-group">
+          <label>校园建筑规模</label>
+          <div><span class="val-display" id="buildVal">38</span><span class="unit">栋</span></div>
+          <input type="range" id="buildSlider" min="10" max="100" value="38" step="1">
+        </div>
+        <div class="calc-slider-group">
+          <label>覆盖面积</label>
+          <div><span class="val-display" id="areaVal">922</span><span class="unit">亩</span></div>
+          <input type="range" id="areaSlider" min="100" max="2000" value="922" step="10">
+        </div>
+        <div class="calc-slider-group">
+          <label>场景复杂度</label>
+          <select id="complexSel"><option value="1">标准（空间还原）</option><option value="1.5">精细（材质细化）</option><option value="2.2">超精细（照片级）</option></select>
+        </div>
+        <div class="calc-slider-group">
+          <label>分析年限</label>
+          <select id="yearSel"><option value="1">1 年</option><option value="3">3 年</option><option value="5">5 年</option></select>
+        </div>
+      </div>
+      <!-- Middle: traditional -->
+      <div class="cost-col trad" id="tradCol">
+        <div class="cost-col-header">传统智慧校园方案</div>
+        <div class="cost-row"><span class="item">三维场景建设</span><span class="price" id="t1">¥180 万</span></div>
+        <div class="cost-row"><span class="item">大屏软件定制开发</span><span class="price" id="t2">¥120 万</span></div>
+        <div class="cost-row"><span class="item">硬件设备(服务器+大屏)</span><span class="price" id="t3">¥80 万</span></div>
+        <div class="cost-row"><span class="item">数据平台搭建</span><span class="price" id="t4">¥60 万</span></div>
+        <div class="cost-row"><span class="item">年度运维团队</span><span class="price" id="t5">¥50 万/年</span></div>
+        <div class="cost-total"><span>首年合计</span><span id="tTotal">¥490 万</span></div>
+      </div>
+      <!-- Right: new -->
+      <div class="cost-col newp" id="newCol">
+        <div class="cost-col-header">AI + Web + 数字孪生方案</div>
+        <div class="cost-row"><span class="item">WDP 数字孪生建模</span><span class="price" id="n1">¥60 万</span></div>
+        <div class="cost-row"><span class="item">Web 可视化开发</span><span class="price" id="n2">¥30 万</span></div>
+        <div class="cost-row"><span class="item">云渲染服务年费</span><span class="price" id="n3">¥12 万/年</span></div>
+        <div class="cost-row"><span class="item">系统 API 对接</span><span class="price" id="n4">¥8 万</span></div>
+        <div class="cost-row promo"><span class="item">WDP 平台接入</span><span class="price" id="n5">首发免费 · 限量</span></div>
+        <div class="cost-total"><span>首年合计</span><span id="nTotal">¥110 万</span></div>
+      </div>
+      <!-- Bottom: comparison -->
+      <div class="save-block" id="saveBlock">
+        <div>
+          <div class="save-pct" id="savePct">节省 78%</div>
+          <div class="save-label">本方案节省成本</div>
+          <div class="save-amount" id="saveAmt">¥380 万</div>
+        </div>
+        <div class="compare-bars">
+          <div class="cbar trad-bar" id="tradBar" style="width:100%"><span>传统方案</span><span class="cbar-label" id="tradBarLabel">¥490万</span></div>
+          <div class="cbar new-bar" id="newBar" style="width:22%"><span>AI+Web方案</span><span class="cbar-label" id="newBarLabel">¥110万</span></div>
+        </div>
+        <p style="font-size:clamp(.45rem,.7vw,.55rem);color:var(--tx3);grid-column:1/-1">* 以上金额单位：万元人民币（含税指导价），仅供参考。实际价格依使用量协商。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== SLIDE 14: TIMELINE ======================== -->
+<section class="slide" data-title="交付计划">
+  <span class="sn">14</span>
+  <div class="orb" style="width:250px;height:250px;background:#93c5fd;bottom:10%;right:-50px;opacity:.1;animation:float 7s ease-in-out infinite"></div>
+  <div class="sc">
+    <span class="sl rv">Project Timeline</span>
+    <h2 class="rv">项目交付计划</h2>
+    <div class="divider rv"></div>
+    <p class="rv" style="font-size:var(--bs);color:var(--tx2);margin-bottom:clamp(.5rem,1.5vh,1rem)">总周期约 <strong class="ta">9 周</strong>，分 4 个阶段推进，每阶段有明确产出物。</p>
+    <div class="timeline rv">
+      <div class="tl-item">
+        <div class="tl-bar"><div class="tl-fill"></div></div>
+        <div class="tl-num">Phase 01</div>
+        <h3>需求确认与场景建模</h3>
+        <p>调研业务需求<br>校园 3D 场景搭建<br>数据接口定义</p>
+        <span class="tl-tag">2 周 · 输出：需求规格 + 场景底座</span>
+      </div>
+      <div class="tl-item">
+        <div class="tl-bar"><div class="tl-fill"></div></div>
+        <div class="tl-num">Phase 02</div>
+        <h3>前端开发与 API 对接</h3>
+        <p>大屏 UI 开发<br>ECharts 图表集成<br>WDP 覆盖物接入</p>
+        <span class="tl-tag">4 周 · 输出：功能版本 + API 联调</span>
+      </div>
+      <div class="tl-item">
+        <div class="tl-bar"><div class="tl-fill"></div></div>
+        <div class="tl-num">Phase 03</div>
+        <h3>联调测试与优化</h3>
+        <p>端到端联调<br>性能优化<br>大屏适配验证</p>
+        <span class="tl-tag">2 周 · 输出：测试报告 + 优化版本</span>
+      </div>
+      <div class="tl-item">
+        <div class="tl-bar"><div class="tl-fill"></div></div>
+        <div class="tl-num">Phase 04</div>
+        <h3>部署上线与培训</h3>
+        <p>生产环境部署<br>运维文档交付<br>操作培训</p>
+        <span class="tl-tag">1 周 · 输出：上线 + 培训手册</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== SLIDE 15: VALUE ======================== -->
+<section class="slide" data-title="项目价值">
+  <span class="sn">15</span>
+  <div class="orb" style="width:400px;height:400px;background:#bbf7d0;bottom:-100px;left:50%;margin-left:-200px;opacity:.15;animation:pulse 4s ease-in-out infinite"></div>
+  <div class="sc" style="align-items:center;text-align:center">
+    <span class="sl rv">Value Proposition</span>
+    <h2 class="rv">项目价值</h2>
+    <div class="divider rv" style="margin-left:auto;margin-right:auto"></div>
+    <div class="feature-grid rv" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));max-width:min(90vw,900px);margin-top:clamp(.4rem,1vh,.6rem)">
+      <div class="cc tilt" style="text-align:left;padding:clamp(.8rem,1.5vw,1.2rem)"><div style="font-size:clamp(1.3rem,2.5vw,2rem);margin-bottom:.3rem">👁️</div><h3 style="font-size:clamp(.8rem,1.3vw,1rem);margin-bottom:.3rem">全域可视</h3><p style="font-size:var(--ss);color:var(--tx2);line-height:1.5">校园全景一屏掌握，38栋建筑空间化呈现。从宏观俯瞰到微观建筑详情，多层级数据融合立体展示，让管理者"看见"整个校园。</p></div>
+      <div class="cc tilt" style="text-align:left;padding:clamp(.8rem,1.5vw,1.2rem)"><div style="font-size:clamp(1.3rem,2.5vw,2rem);margin-bottom:.3rem">⚡</div><h3 style="font-size:clamp(.8rem,1.3vw,1rem);margin-bottom:.3rem">实时响应</h3><p style="font-size:var(--ss);color:var(--tx2);line-height:1.5">告警秒级推送，场景自动飞行聚焦。从发现到处置全链路可追溯，平均响应时间从分钟级降至秒级，让应急不再被动。</p></div>
+      <div class="cc tilt" style="text-align:left;padding:clamp(.8rem,1.5vw,1.2rem)"><div style="font-size:clamp(1.3rem,2.5vw,2rem);margin-bottom:.3rem">🧠</div><h3 style="font-size:clamp(.8rem,1.3vw,1rem);margin-bottom:.3rem">智能决策</h3><p style="font-size:var(--ss);color:var(--tx2);line-height:1.5">AI 视频感知 + 多维数据分析，自动识别异常模式。16+ 业务图表辅助管理决策，从"经验驱动"升级为"数据驱动"。</p></div>
+      <div class="cc tilt" style="text-align:left;padding:clamp(.8rem,1.5vw,1.2rem)"><div style="font-size:clamp(1.3rem,2.5vw,2rem);margin-bottom:.3rem">🔗</div><h3 style="font-size:clamp(.8rem,1.3vw,1rem);margin-bottom:.3rem">统一平台</h3><p style="font-size:var(--ss);color:var(--tx2);line-height:1.5">安防·运维·检测·概览四合一，打破信息孤岛。云渲染零门槛，浏览器即用，大屏/PC/平板/手机多端适配，无需安装任何插件。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== SLIDE 16: END ======================== -->
+<section class="slide title-slide" data-title="结束">
+  <div class="orb" style="width:600px;height:600px;background:#93c5fd;top:50%;left:50%;transform:translate(-50%,-50%);opacity:.12;animation:pulse 4s ease-in-out infinite"></div>
+  <div class="orb" style="width:400px;height:400px;background:#c4b5fd;top:50%;left:50%;transform:translate(-50%,-50%);opacity:.08;animation:pulse 4s ease-in-out infinite 2s"></div>
+  <div class="sc">
+    <span class="badge rv">Thank You</span>
+    <div class="tl rv"></div>
+    <h1 class="rv" style="font-size:clamp(1.8rem,5vw,4rem)">智慧校园网页方案</h1>
+    <div class="tl rv"></div>
+    <p class="rv subtitle">WDP 数字孪生平台 · 复旦大学邯郸校区</p>
+    <p class="rv" style="font-size:var(--ss);color:var(--acc);margin-top:clamp(.8rem,2vh,1.5rem);font-family:var(--f-m);font-weight:600">期待与您的合作</p>
+  </div>
+</section>
+
+<!-- ===========================================
+     JAVASCRIPT
+     =========================================== -->
+<script>
+/* === SLIDE CONTROLLER === */
+class SlidePresentation {
+  constructor() {
+    this.slides = document.querySelectorAll('.slide');
+    this.cur = 0; this.scrolling = false;
+    this.setupObserver(); this.setupKeys(); this.setupTouch(); this.setupWheel();
+    this.setupDots(); this.checkDemo();
+    document.getElementById('layerMock')?.addEventListener('click', e => {
+      const btn = e.target.closest('.lm-btn');
+      if (btn) btn.classList.toggle('on');
+    });
+  }
+  setupObserver() {
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(en => {
+        if (en.isIntersecting) {
+          en.target.classList.add('visible');
+          const i = [...this.slides].indexOf(en.target);
+          if (i !== -1) { this.cur = i; this.updateUI(); this.animateCounters(en.target); }
+        }
+      });
+    }, { threshold: 0.35 });
+    this.slides.forEach(s => obs.observe(s));
+  }
+  setupKeys() {
+    document.addEventListener('keydown', e => {
+      if (e.target.getAttribute('contenteditable') === 'true') return;
+      switch(e.key) {
+        case 'ArrowDown':case 'ArrowRight':case ' ':case 'PageDown': e.preventDefault(); this.go(this.cur+1); break;
+        case 'ArrowUp':case 'ArrowLeft':case 'PageUp': e.preventDefault(); this.go(this.cur-1); break;
+        case 'Home': e.preventDefault(); this.go(0); break;
+        case 'End': e.preventDefault(); this.go(this.slides.length-1); break;
+      }
+    });
+  }
+  setupTouch() {
+    let y0=0;
+    document.addEventListener('touchstart', e => { y0=e.touches[0].clientY }, {passive:true});
+    document.addEventListener('touchend', e => {
+      const d=y0-e.changedTouches[0].clientY;
+      if(Math.abs(d)>50){ d>0?this.go(this.cur+1):this.go(this.cur-1); }
+    }, {passive:true});
+  }
+  setupWheel() {
+    document.addEventListener('wheel', e => {
+      if(this.scrolling) return; this.scrolling=true;
+      if(e.deltaY>30) this.go(this.cur+1); else if(e.deltaY<-30) this.go(this.cur-1);
+      setTimeout(()=>{this.scrolling=false},800);
+    }, {passive:true});
+  }
+  setupDots() {
+    const c=document.getElementById('navDots');
+    this.slides.forEach((s,i) => {
+      const d=document.createElement('button'); d.className='nd'+(i===0?' active':'');
+      d.title=s.dataset.title||`Slide ${i+1}`;
+      d.addEventListener('click',()=>this.go(i)); c.appendChild(d);
+    });
+    this.dots=c.querySelectorAll('.nd');
+  }
+  go(i) {
+    if(i<0||i>=this.slides.length) return;
+    this.cur=i; this.slides[i].scrollIntoView({behavior:'smooth'}); this.updateUI();
+  }
+  updateUI() {
+    const pct=(this.cur/(this.slides.length-1))*100;
+    document.getElementById('progressBar').style.width=pct+'%';
+    if(this.dots) this.dots.forEach((d,i)=>d.classList.toggle('active',i===this.cur));
+    const pi=document.getElementById('pageInd');
+    if(pi) pi.querySelector('.cur').textContent=String(this.cur+1).padStart(2,'0');
+  }
+  animateCounters(slide) {
+    if(slide.dataset.counted) return; slide.dataset.counted='1';
+    slide.querySelectorAll('[data-count]').forEach(el => {
+      const target=parseInt(el.dataset.count); if(isNaN(target)) return;
+      let start=0; const step=Math.max(1,Math.ceil(target/60));
+      const run=()=>{ start=Math.min(start+step,target); el.textContent=start.toLocaleString(); if(start<target) requestAnimationFrame(run); };
+      run();
+    });
+  }
+  checkDemo() {
+    const f=document.getElementById('demoFrame'),fb=document.getElementById('demoFallback');
+    if(!f||!fb) return;
+    f.addEventListener('error',()=>{f.style.display='none';fb.style.display='flex'});
+    setTimeout(()=>{try{if(!f.contentWindow||!f.contentWindow.document.body.children.length){f.style.display='none';fb.style.display='flex'}}catch(e){}},5000);
+  }
+}
+
+/* === 3D TILT === */
+document.querySelectorAll('.tilt').forEach(el => {
+  el.addEventListener('mousemove', e => {
+    const r=el.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
+    el.style.transform=`perspective(800px) rotateY(${x*8}deg) rotateX(${-y*8}deg) translateY(-4px)`;
+  });
+  el.addEventListener('mouseleave', ()=>{ el.style.transform=''; });
+});
+
+/* === COST CALCULATOR === */
+(function(){
+  const bS=document.getElementById('buildSlider'), aS=document.getElementById('areaSlider');
+  const cS=document.getElementById('complexSel'), yS=document.getElementById('yearSel');
+  const bV=document.getElementById('buildVal'), aV=document.getElementById('areaVal');
+  if(!bS) return;
+
+  function fmt(v){ return '¥'+Math.round(v)+' 万'; }
+  function calc(){
+    const b=+bS.value, a=+aS.value, cx=+cS.value, yr=+yS.value;
+    bV.textContent=b; aV.textContent=a;
+    const bRatio=b/38, aRatio=a/922;
+    const t1=Math.round(180*bRatio*cx), t2=Math.round(120*cx), t3=80, t4=Math.round(60*aRatio);
+    const t5yr=50*yr, tFirst=t1+t2+t3+t4+50, tAll=t1+t2+t3+t4+t5yr;
+    document.getElementById('t1').textContent=fmt(t1);
+    document.getElementById('t2').textContent=fmt(t2);
+    document.getElementById('t3').textContent=fmt(t3);
+    document.getElementById('t4').textContent=fmt(t4);
+    document.getElementById('t5').textContent=fmt(50)+'/年';
+    document.getElementById('tTotal').textContent=yr>1?fmt(tAll)+' ('+yr+'年)':fmt(tFirst);
+    const n1=Math.round(60*bRatio*Math.min(cx,1.5)), n2=Math.round(30*Math.sqrt(cx));
+    const n3yr=12*yr, n4=8;
+    const nFirst=n1+n2+12+n4, nAll=n1+n2+n3yr+n4;
+    document.getElementById('n1').textContent=fmt(n1);
+    document.getElementById('n2').textContent=fmt(n2);
+    document.getElementById('n3').textContent=fmt(12)+'/年';
+    document.getElementById('n4').textContent=fmt(n4);
+    const totalT=yr>1?tAll:tFirst, totalN=yr>1?nAll:nFirst;
+    document.getElementById('nTotal').textContent=yr>1?fmt(totalN)+' ('+yr+'年)':fmt(nFirst);
+    const savePct=Math.round((1-totalN/totalT)*100);
+    const saveVal=totalT-totalN;
+    document.getElementById('savePct').textContent='节省 '+savePct+'%';
+    document.getElementById('saveAmt').textContent=fmt(saveVal);
+    document.getElementById('tradBar').style.width='100%';
+    document.getElementById('newBar').style.width=Math.round((totalN/totalT)*100)+'%';
+    document.getElementById('tradBarLabel').textContent=fmt(totalT);
+    document.getElementById('newBarLabel').textContent=fmt(totalN);
+  }
+  [bS,aS,cS,yS].forEach(el=>el.addEventListener('input',calc));
+  calc();
+})();
+
+/* === LANGUAGE TOGGLE === */
+(function(){
+  const btn=document.getElementById('langBtn');
+  let isEN=false;
+  btn.addEventListener('click',()=>{
+    isEN=!isEN; btn.textContent=isEN?'中':'EN';
+    document.body.classList.toggle('lang-en',isEN);
+  });
+})();
+
+/* === INLINE EDITOR === */
+class InlineEditor {
+  constructor(){ this.isActive=false; this.editables=document.querySelectorAll('h1,h2,h3,p,span:not(.nd):not(.lm-dot):not(.ld):not(.pill):not(.tag-pill),li'); }
+  toggle(){
+    this.isActive=!this.isActive;
+    document.getElementById('editToggle').classList.toggle('active',this.isActive);
+    this.editables.forEach(el=>{
+      if(el.closest('#navDots')||el.closest('.edit-toggle')||el.closest('iframe')||el.closest('.calc-panel')||el.closest('select')) return;
+      el.setAttribute('contenteditable',this.isActive?'true':'false');
+    });
+    if(!this.isActive) this.save();
+  }
+  save(){ const d={}; document.querySelectorAll('.slide').forEach((s,i)=>{d[i]=s.innerHTML}); localStorage.setItem('slides-v2',JSON.stringify(d)); }
+  load(){ const r=localStorage.getItem('slides-v2'); if(!r) return; try{const d=JSON.parse(r); document.querySelectorAll('.slide').forEach((s,i)=>{if(d[i]) s.innerHTML=d[i]})}catch(e){} }
+}
+const editor=new InlineEditor(); editor.load();
+const hotzone=document.getElementById('editHotzone'), etBtn=document.getElementById('editToggle');
+let ht=null;
+hotzone.addEventListener('mouseenter',()=>{clearTimeout(ht);etBtn.classList.add('show')});
+hotzone.addEventListener('mouseleave',()=>{ht=setTimeout(()=>{if(!editor.isActive)etBtn.classList.remove('show')},400)});
+etBtn.addEventListener('mouseenter',()=>{clearTimeout(ht)});
+etBtn.addEventListener('mouseleave',()=>{ht=setTimeout(()=>{if(!editor.isActive)etBtn.classList.remove('show')},400)});
+etBtn.addEventListener('click',()=>editor.toggle());
+hotzone.addEventListener('click',()=>editor.toggle());
+document.addEventListener('keydown',e=>{
+  if((e.key==='e'||e.key==='E')&&!e.target.getAttribute('contenteditable')) editor.toggle();
+  if(e.ctrlKey&&e.key==='s'){e.preventDefault();editor.save()}
+});
+
+/* === INIT === */
+new SlidePresentation();
+</script>
+</body>
+</html>
